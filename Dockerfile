@@ -14,7 +14,6 @@ RUN npm run prod --prefix cordova-plugin-moodleapp
 
 # Prepare node dependencies
 COPY package*.json ./
-COPY patches ./patches
 RUN echo "unsafe-perm=true" > ./.npmrc
 RUN npm ci --no-audit
 
