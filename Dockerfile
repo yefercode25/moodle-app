@@ -1,29 +1,16 @@
-## BUILD STAGE
-FROM node:14 as build-stage
+# Usa una imagen base de PHP con Apache
+FROM php:7.4-apache
 
-WORKDIR /app
+# Copia el código fuente de Moodle al directorio de trabajo en el contenedor
+COPY . /var/www/html/
 
-# Update platform dependencies
-RUN apt-get update && apt-get install libsecret-1-0 -y
+# Configuración adicional de Apache
+RUN a2enmod rewrite \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Prepare native plugin
-COPY ./cordova-plugin-moodleapp/package*.json /app/cordova-plugin-moodleapp/
-RUN npm ci --prefix cordova-plugin-moodleapp
-COPY ./cordova-plugin-moodleapp/ /app/cordova-plugin-moodleapp/
-RUN npm run prod --prefix cordova-plugin-moodleapp
+# Expone el puerto 80
+EXPOSE 80
 
-# Prepare node dependencies
-COPY package*.json ./
-RUN echo "unsafe-perm=true" > ./.npmrc
-RUN npm ci --no-audit
-
-# Build source
-ARG build_command="npm run build:prod"
-COPY . /app
-RUN ${build_command}
-
-## SERVE STAGE
-FROM nginx:alpine as serve-stage
-
-# Copy assets & config
-COPY --from=build-stage /app/www /usr/share/nginx/html
+# Comando para iniciar Apache
+CMD ["apache2-foreground"]
