@@ -1,16 +1,19 @@
-# Usa una imagen base de PHP con Apache
-FROM php:7.4-apache
+# Usa una imagen base de PHP
+FROM php:7.4
 
 # Copia el código fuente de Moodle al directorio de trabajo en el contenedor
 COPY . /var/www/html/
 
-# Configuración adicional de Apache
-RUN a2enmod rewrite \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Establece el directorio de trabajo
+WORKDIR /var/www/html/
 
-# Expone el puerto 80
+# Instala las dependencias necesarias (puedes ajustar según sea necesario)
+RUN apt-get update && apt-get install -y \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Exponer el puerto 80 del contenedor
 EXPOSE 80
 
-# Comando para iniciar Apache
-CMD ["apache2-foreground"]
+# Comando para ejecutar el servidor web incorporado de PHP en el puerto 3000
+CMD ["php", "-S", "0.0.0.0:3000"]
